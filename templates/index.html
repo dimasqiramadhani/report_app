@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Aplikasi Kasir</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/sales">Penjualan</a></li>
+            <li><a href="/report">Laporan Penjualan</a></li>
+        </ul>
+    </nav>
+    
+    <div class="container">
+        <h1>Produk</h1>
+        <form id="product-form">
+            <div class="form-group">
+                <label for="name">Nama Produk:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="price">Harga:</label>
+                <input type="number" id="price" name="price" step="0.01" required>
+            </div>
+            <button type="submit">Tambah Produk</button>
+        </form>
+        <h2>Daftar Produk</h2>
+        <table id="product-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nama</th>
+                    <th>Harga</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        
+        <h1>Penjualan</h1>
+        <form id="sale-form">
+            <div class="form-group">
+                <label class="label" for="product-id">ID Produk:</label>
+                <input type="number" id="product-id" name="product_id" required>
+            </div>
+            <div class="form-group">
+                <label class="label" for="quantity">Jumlah:</label>
+                <input type="number" id="quantity" name="quantity" required>
+            </div>
+            <div class="form-group">
+                <label class="label" for="total-price">Total Harga:</label>
+                <input type="number" id="total-price" name="total_price" step="0.01" required>
+            </div>
+            <button type="submit">Tambah Penjualan</button>
+        </form>
+
+        <h2>Daftar Penjualan</h2>
+        <table id="sale-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nama Produk</th>
+                    <th>Jumlah</th>
+                    <th>Total Harga</th>
+                    <th>Tanggal Penjualan</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+
+        <h1>Laporan Penjualan</h1>
+        <table id="report-table">
+            <thead>
+                <tr>
+                    <th>Nama Produk</th>
+                    <th>Total Jumlah</th>
+                    <th>Total Penjualan</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.getElementById('product-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const price = document.getElementById('price').value;
+            fetch('/product', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, price })
+            }).then(response => response.json())
+              .then(data => {
+                  fetchProducts();
+              });
+        });
+
+        function fetchProducts() {
+            fetch('/products')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.getElementById('product-table').getElementsByTagName('tbody')[0];
+                    tableBody.innerHTML = '';
+                    data.forEach(product => {
+                        const row = tableBody.insertRow();
+                        row.insertCell().textContent = product[0];
+                        row.insertCell().textContent = product[1];
+                        row.insertCell().textContent = product[2];
+                    });
+                });
+        }
+
+        fetchProducts();
+
+
+        document.getElementById('sale-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const productId = document.getElementById('product-id').value;
+        const quantity = document.getElementById('quantity').value;
+        const totalPrice = document.getElementById('total-price').value;
+        fetch('/sale', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ product_id: productId, quantity, total_price: totalPrice })
+        }).then(response => response.json())
+          .then(data => {
+              fetchSales();
+          });
+    });
+
+    function fetchSales() {
+        fetch('/sales')
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('sale-table').getElementsByTagName('tbody')[0];
+                tableBody.innerHTML = '';
+                data.forEach(sale => {
+                    const row = tableBody.insertRow();
+                    row.insertCell().textContent = sale[0];
+                    row.insertCell().textContent = sale[1];
+                    row.insertCell().textContent = sale[2];
+                    row.insertCell().textContent = sale[3];
+                    row.insertCell().textContent = new Date(sale[4]).toLocaleString();
+                });
+            });
+    }
+
+    fetchSales();
+
+    function fetchReport() {
+        fetch('/report')
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('report-table').getElementsByTagName('tbody')[0];
+                tableBody.innerHTML = '';
+                data.forEach(report => {
+                    const row = tableBody.insertRow();
+                    row.insertCell().textContent = report[0];
+                    row.insertCell().textContent = report[1];
+                    row.insertCell().textContent = report[2];
+                });
+            });
+    }
+
+    fetchReport();
+    </script>
+</body>
+</html>
